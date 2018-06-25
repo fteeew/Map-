@@ -1,0 +1,392 @@
+﻿@using WebApplication1.Models
+@model IEnumerable<Layer>
+@{
+    ViewBag.Title = "Reload";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}  
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="http://localhost:8080/geoserver/openlayers3/ol.css" type="text/css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+    <script src="~/Scripts/jquery-ui.js"></script>
+    <link rel="stylesheet" href="http://localhost:8080/geoserver/openlayers3/ol.css" type="text/css">
+    <script src="http://localhost:8080/geoserver/openlayers3/ol.js" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+            font-size: small;
+        }
+
+        #map {
+            margin: 30px 30px 30px 30px;
+            clear: both;
+            float: right;
+            position: relative;
+            width: 700px;
+            height: 550px;
+            border: 1px solid black;
+        }
+        #sortable {
+            margin: 30px 5px 15px;
+            list-style-type: none;
+            margin: 5;
+            padding: 3;
+            width: 25%;
+        }
+
+         #sortable li {
+                margin: 3px 3px 3px 3px;
+                padding: 0.4em;
+                padding-left: 1.5em;
+                font-size: 1em;
+                height: 30px;
+            }
+
+        #sortable li span {
+                    position: absolute;
+                    margin-left: -1.3em;
+                }
+        .dialog {
+            background-color: black;
+            border: 3px solid black;
+            font-family: sans-serif;
+            padding: 5px 10px 20px 20px;
+        }
+        #map2 {
+            float: right;
+            clear: both;
+            position: relative;
+            width: 350px;
+            height: 210px;
+            border: 1px solid;
+            margin: 3px 3px 3px 3px;
+        }
+        .buttonclass {
+          
+            margin: 10px 10px;
+        }
+        .buttonclass22 {
+            position: absolute;
+            bottom: 5%;
+            right: 20%;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div id="map"> </div>
+    <button class="buttonclass"
+            onclick="OpenDialog()">
+        Add Layers
+    </button>
+    <div id="Dialog-Box" class="dialog">
+
+        <div id="map2"></div>
+        <input type="text" id="url">
+        <button onclick="search()" >Search</button>
+        <p>Layer List</p>
+        <select id="layersList"  onchange="displayMap()" class="form-control" size="9" multiple></select>
+        <button id="btn_createList">Add Map Service</button>
+    </div>
+    <div id="sortable_list">
+        <ul id="sortable" class="ul_current"></ul>
+    </div>
+    <input type="hidden" id="projection">
+    <input type="hidden" id="bound">
+    
+        <script>
+            var format = 'image/png';
+            var untiled = new ol.layer.Image({
+                source: new ol.source.ImageWMS({
+                    ratio: 1,
+                    url: 'http://localhost:8080/geoserver/Aya/wms',
+                    params: {
+                        'FORMAT': format,
+                        'VERSION': '1.1.1',
+                        STYLES: '',
+                        LAYERS: "",
+                    }
+                })
+            });
+            var projection = new ol.proj.Projection({
+                code: 'EPSG:404000',
+                units: 'm',
+                axisOrientation: 'neu',
+                global: false
+            });
+
+            var map = new ol.Map({
+                target: 'map',
+                layers: [
+                    untiled
+                ],
+                view: new ol.View({
+                    projection: projection
+                })
+            });
+            var bounds = [166728.375, 151253.234375,
+                170051.65625, 154540.5625];
+
+        </script>
+       
+      @foreach (Layer item in Model)
+      { 
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $(function() {
+
+
+                    $('.ul_current').append('<li id="' + "@item.LayerName" + '"class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>' + "@item.LayerName");
+                    $( "#sortable" ).sortable();
+                    $("#sortable").disableSelection();
+                  
+                });
+            });
+
+
+        </script>
+      }
+       <script>
+            var myArray = [];
+            var layeree = [];
+            var arr = [];
+
+            @foreach (Layer item in Model)
+            {
+
+                @:myArray.push("@item.LayerName");
+                @:layeree.push(@item.Layer_site);
+
+            }
+
+            var arrayLength = myArray.length;
+            for (var t = 0; t < arrayLength; ++t) {
+                arr.push({
+                    name: myArray[t],
+                    id: layeree[t],
+                    sortable: true,
+                    resizeable: true
+                });
+            }
+
+            for (var i = arrayLength-1; i >=0 ; i--) {
+                for (var j = arrayLength - 1 ; j >=0; j--) {
+
+                    if (i == arr[j].id) {
+                        var layer = new ol.layer.Image({
+                            source: new ol.source.ImageWMS({
+                                ratio: 1,
+                                url: 'http://localhost:8080/geoserver/Aya/wms',
+                                params: {
+                                    'FORMAT': format,
+                                    'VERSION': '1.1.1',
+                                    STYLES: '',
+                                    LAYERS: arr[j].name,
+                                }
+                            })
+                        });
+
+
+                        console.log("map displayed" + arr[j].name + "layer site=" + arr[j].id);
+                        map.addLayer(layer);
+                        map.getView().fit(bounds, map.getSize());
+                        $("#map").append(map);
+                    }
+                }
+            }
+       </script>
+
+            <script type="text/javascript">
+                $(document).ready(function () {      
+                
+                $("#sortable").sortable({
+
+                    update: function (e, ui) {
+                        var format = 'image/png';
+                        var bounds = [166728.375, 151253.234375,
+                            170051.65625, 154540.5625];
+                        //$("#map").empty();
+                        var itemOrder = $("#sortable").sortable("toArray");
+                        for (var i = itemOrder.length - 1; i >= 0; i--) {
+                            $("#sortable").sortable("refresh");
+                            var layer3 = new ol.layer.Image({
+                                source: new ol.source.ImageWMS({
+
+                                    url: 'http://localhost:8080/geoserver/wms',
+                                    params: {
+                                        'FORMAT': format,
+                                        'VERSION': '1.1.1',
+                                        STYLES: '',
+                                        LAYERS: itemOrder[i],
+                                    }
+                                })
+                            });
+                            $("#projection").val("EPSG:404000");
+                            $("#bound").val(bounds);
+                            map.addLayer(layer3);
+                            map.getView().fit(bounds, map.getSize());
+                            var url = $("#url").val();
+                            var projection = $("#projection").val();
+                            var bound = $("#bound").val();
+                            $("#map").append(map);
+                            $.ajax({
+                                type: "POST",
+                                url: "/Home/update",
+                                data: { "url": url, "blockName": itemOrder[i], "projection": projection, "bound": bound, "Layer_site": i },
+                                success: function (respond) {
+
+                                   // alert("" + url + projection + bound);
+                                }
+
+                            });
+
+                        }
+                    }
+                });
+                });
+               
+
+                $("#Dialog-Box").dialog({
+
+                    autoOpen: false,
+                    height: 300,
+                    width: 700,
+                    resizable: true,
+                    modal: false,
+
+                });
+                function OpenDialog() {
+                    $('#Dialog-Box').dialog('option', 'title', 'Map Services');
+                    $('#Dialog-Box').dialog('open');
+                }
+                function search() {
+                    $("#layersList").empty();
+                    var search_url = $("#url").val();
+                    if ($("#url").val() != "") {
+                        $.ajax({
+                            method: "GET",
+                            url: "/Home/GetDataFromUrl",
+                            dataType: "xml",
+                            data: { url: search_url + "/wms?service=wms&request=GetCapabilities" },
+                            success: function (data) {
+                                var parser = new ol.format.WMSCapabilities();
+                                var capabilities = parser.read(data);
+                                var layers = capabilities.Capability.Layer.Layer;
+                                console.log(layers);
+
+                                for (var i = 0; i < layers.length; ++i) {
+                                    var option = document.createElement('option');
+                                    option.text = layers[i].Name;
+                                    option.value = layers[i].Name;
+                                    layersList.add(option);
+
+                                }
+                            },
+                            error: function (data) {
+                                console.log(data);
+                            }
+                        });
+                    }
+                    else {
+                        alert(" you should enter your localhost name");
+                    }
+                }
+                function displayMap() {
+                    $('#map2').empty();
+                    var search_url = $("#url").val();
+                    var e = document.getElementById("layersList").value;
+                    var untiled = new ol.layer.Image({
+                        source: new ol.source.ImageWMS({
+
+                            url: search_url + "/wms",
+                            params: {
+                                'FORMAT': format,
+                                'VERSION': '1.1.1',
+                                STYLES: '',
+                                LAYERS: e
+                            }
+                        })
+                    });
+                    $("#projection").val("EPSG:404000");
+                    var projection = new ol.proj.Projection({
+                        code: 'EPSG:404000',
+                        units: 'm',
+                        axisOrientation: 'neu',
+                        global: false
+                    });
+
+                    var map2 = new ol.Map({
+                        target: 'map2',
+                        layers: [
+                            untiled
+                        ],
+                        //epresents a simple 2D view of the map.
+                        view: new ol.View({
+                            projection: projection
+                        })
+                    });
+                    map2.addLayer(untiled);
+                    map2.getView().fit(bounds, map2.getSize());
+                }
+                $('#btn_createList').click(function () {
+                    var e = document.getElementById("layersList").value;
+                    var itemOrder = $("#sortable").sortable("toArray");
+                    var exist = 0;
+                    for (var i = 0; i < itemOrder.length; i++) {
+                        if (itemOrder[i] == e)
+                            exist = 1;
+                    }
+                    if (exist == 0) {
+                        $('.ul_current').append('<li id="' + e + '"class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>' + e);
+
+                        $("#sortable").sortable("refresh");
+                        var layer3 = new ol.layer.Image({
+                            source: new ol.source.ImageWMS({
+
+                                url: 'http://localhost:8080/geoserver/wms',
+                                params: {
+                                    'FORMAT': format,
+                                    'VERSION': '1.1.1',
+                                    STYLES: '',
+                                    LAYERS: e,
+                                }
+                            })
+                        });
+
+                        map.addLayer(layer3);
+                        map.getView().fit(bounds, map.getSize());
+                        $("#map").append(map);
+                        var url = $("#url").val();
+                        $("#projection").val("EPSG:404000");
+                        $("#bound").val(bounds);
+                        var projection = $("#projection").val();
+                        var bound = $("#bound").val();
+                        $.ajax({
+                            type: "POST",
+                            url: "/Home/getData",
+                            data: { "url": url, "blockName": e, "projection": projection, "bound": bound, "Layer_site": 0 },
+                            success: function (respond) {
+
+                                //alert("" + url + projection + bound);
+                            }
+
+                        });
+
+                    }
+                    });
+
+                
+                
+            </script>
+        
+</body>
+</html>

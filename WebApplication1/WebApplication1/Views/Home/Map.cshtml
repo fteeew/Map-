@@ -1,0 +1,344 @@
+﻿
+@{
+    ViewBag.Title = "test";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Services</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+    <script src="~/Scripts/jquery-ui.js"></script>
+    <link rel="stylesheet" href="http://localhost:8080/geoserver/openlayers3/ol.css" type="text/css">
+    <script src="http://localhost:8080/geoserver/openlayers3/ol.js" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+            font-size: small;
+        }
+
+        #map {
+            float: right;
+            clear: both;
+            position: relative;
+            width: 350px;
+            height: 210px;
+            border: 1px solid;
+            margin: 3px 3px 3px 3px;
+        }
+
+        #map2 {
+            float: right;
+            top: -60px;
+            clear: both;
+            position: relative;
+            width: 750px;
+            height: 600px;
+            border: 1px solid;
+            margin: 6px 6px 6px 6px;
+        }
+
+        .borderexample {
+            border-style: solid;
+            border-color: #287EC7;
+            text-shadow: 3px 2px red;
+            float: right;
+            top: -10px;
+        }
+
+        .dialog {
+            background-color: black;
+            border: 3px solid black;
+            font-family: sans-serif;
+            padding: 5px 10px 20px 20px;
+        }
+
+        #sortable {
+            list-style-type: none;
+            margin: 5;
+            padding: 3;
+            width: 20%;
+        }
+
+            #sortable li {
+                margin: 3px 3px 3px 3px;
+                padding: 0.4em;
+                padding-left: 1.5em;
+                font-size: 1em;
+                height: 30px;
+            }
+
+                #sortable li span {
+                    position: absolute;
+                    margin-left: -1.3em;
+                }
+    </style>
+
+
+</head>
+
+<body>
+        
+    <button onclick="location.href='@Url.Action("delete", "Home")'">delete</button>
+        <h2>Map Services</h2>
+        <div id='alrt' style="fontWeight = 'bold'"></div>
+        <button onclick="OpenDialog()">
+            Map Layers
+        </button>
+        <div id="message" class="borderexample" style="display:none;">Layer added successfully !</div>
+        <form id="myform">
+            <div id="Dialog-Box" class="dialog">
+
+                <div id="map"></div>
+                <input type="text" id="url">
+                <button onclick="search()">Search</button>
+                <p>Layer List</p>
+                <select id="layersList" onchange="displayMap()" class="form-control" size="9" multiple></select>
+                
+                <button id="btn_createList">Add Map Service</button>
+                <input type="hidden" id="projection">
+                <input type="hidden" id="bound">
+
+            </div>
+            <div id="map2"></div>
+            <div id="sortable_list">
+                <ul id="sortable" class="ul_current"></ul>
+
+            </div>
+            <input type="button" value="submit" id="submit">
+        </form>
+        <script type="text/javascript">
+
+            $("#Dialog-Box").dialog({
+
+                autoOpen: false,
+                height: 300,
+                width: 700,
+                resizable: true,
+                modal: false,
+
+            });
+            function OpenDialog() {
+                $('#Dialog-Box').dialog('option', 'title', 'Map Services');
+                $('#Dialog-Box').dialog('open');
+            }
+            var layersList = document.getElementById("layersList");
+            var format = 'image/png';
+            //taken from the properities of the service when publish it.
+
+            var bounds = [166728.375, 151253.234375,
+                170051.65625, 154540.5625];
+
+            $("#bound").val(bounds);
+            function search() {
+                $("#layersList").empty();
+                var search_url = $("#url").val();
+                if ($("#url").val() != "") {
+                    $.ajax({
+                        method: "GET",
+                        url: "/Home/GetDataFromUrl",
+                        dataType: "xml",
+                        data: { url: search_url + "/wms?service=wms&request=GetCapabilities" },
+                        success: function (data) {
+                            var parser = new ol.format.WMSCapabilities();
+                            var capabilities = parser.read(data);
+                            var layers = capabilities.Capability.Layer.Layer;
+                            console.log(layers);
+
+                            for (var i = 0; i < layers.length; ++i) {
+                                var option = document.createElement('option');
+                                option.text = layers[i].Name;
+                                option.value = layers[i].Name;
+                                layersList.add(option);
+
+                            }
+                        },
+                        error: function (data) {
+                            console.log(data);
+                        }
+                    });
+                }
+                else {
+                    alert(" you should enter your localhost name");
+                }
+            }
+            function displayMap() {
+                $('#map').empty();
+                var search_url = $("#url").val();
+                var e = document.getElementById("layersList").value;
+                var untiled = new ol.layer.Image({
+                    source: new ol.source.ImageWMS({
+
+                        url: search_url + "/wms",
+                        params: {
+                            'FORMAT': format,
+                            'VERSION': '1.1.1',
+                            STYLES: '',
+                            LAYERS: e
+                        }
+                    })
+                });
+                $("#projection").val("EPSG:404000");
+                var projection = new ol.proj.Projection({
+                    code: 'EPSG:404000',
+                    units: 'm',
+                    axisOrientation: 'neu',
+                    global: false
+                });
+
+                var map = new ol.Map({
+                    target: 'map',
+                    layers: [
+                        untiled
+                    ],
+                    //epresents a simple 2D view of the map.
+                    view: new ol.View({
+                        projection: projection
+                    })
+                });
+                map.addLayer(untiled);
+                map.getView().fit(bounds, map.getSize());
+
+            }
+
+
+            var search_url = $("#url").val();
+            var e = document.getElementById("layersList").value;
+            var untiled = new ol.layer.Image({
+                source: new ol.source.ImageWMS({
+
+                    url: search_url + "/wms",
+                    params: {
+                        'FORMAT': format,
+                        'VERSION': '1.1.1',
+                        STYLES: '',
+                        LAYERS: e
+                    }
+                })
+            });
+            var projection = new ol.proj.Projection({
+                code: 'EPSG:404000',
+                units: 'm',
+                axisOrientation: 'neu',
+                global: false
+            });
+
+            var map2 = new ol.Map({
+                target: 'map2',
+                layers: [
+                    untiled
+                ],
+                //epresents a simple 2D view of the map.
+                view: new ol.View({
+                    projection: projection
+                })
+            });
+
+
+
+
+            $(function () {
+                $("#sortable").sortable();
+                $("#sortable").disableSelection();
+            });
+
+            $(window).load(function () {
+
+                $('#btn_createList').click(function () {
+                    var e = document.getElementById("layersList").value;
+                    var itemOrder = $("#sortable").sortable("toArray");
+                    var exist = 0;
+                    for (var i = 0; i < itemOrder.length; i++) {
+                        if (itemOrder[i] == e)
+                            exist = 1;
+                    }
+                    if (exist == 0) {
+                        $('.ul_current').append('<li id="' + e + '"class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>' + e);
+                    }
+                    $("#sortable").sortable("refresh");
+                    var layer3 = new ol.layer.Image({
+                        source: new ol.source.ImageWMS({
+
+                            url: 'http://localhost:8080/geoserver/wms',
+                            params: {
+                                'FORMAT': format,
+                                'VERSION': '1.1.1',
+                                STYLES: '',
+                                LAYERS: e,
+                            }
+                        })
+                    });
+
+                    map2.addLayer(layer3);
+                    map2.getView().fit(bounds, map2.getSize());
+                    $("#map2").append(map2);
+
+                    $('#message').fadeIn('slow', function () {
+                        $('#message').delay(1000).fadeOut();
+                    });
+
+
+                });
+
+            });
+            $("#sortable").sortable({
+
+                update: function (e, ui) {
+                    // ("#map2").empty();
+                    var itemOrder = $("#sortable").sortable("toArray");
+                    for (var i = itemOrder.length - 1; i >= 0; i--) {
+                        $("#sortable").sortable("refresh");
+                        var layer3 = new ol.layer.Image({
+                            source: new ol.source.ImageWMS({
+
+                                url: 'http://localhost:8080/geoserver/wms',
+                                params: {
+                                    'FORMAT': format,
+                                    'VERSION': '1.1.1',
+                                    STYLES: '',
+                                    LAYERS: itemOrder[i],
+                                }
+                            })
+                        });
+
+                        map2.addLayer(layer3);
+                        map2.getView().fit(bounds, map2.getSize());
+                        $("#map2").append(map2);
+
+
+                    }
+                }
+            });
+            $("#submit").click(function () {
+                var url = $("#url").val();
+                //var blockName = document.getElementById("layersList").value;
+                var projection = $("#projection").val();
+                var bound = $("#bound").val();
+                //console.log(blockName);
+                console.log(projection);
+                console.log(bound);
+                var itemOrder = $("#sortable").sortable("toArray");
+                for (var i = 0; i < itemOrder.length; i++) {
+                    console.log(itemOrder);
+                    $.ajax({
+                        type: "POST",
+                        url: "/Home/getData",
+                        data: { "url": url, "blockName": itemOrder[i], "projection": projection, "bound": bound, "Layer_site": i },
+                        success: function (respond) {
+
+                            alert("" + url + projection + bound);
+                        }
+
+                    });
+                }
+            });
+        </script>
+</body>
+

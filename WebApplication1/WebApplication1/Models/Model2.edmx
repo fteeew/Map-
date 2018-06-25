@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="mytestdbModel1.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'mytestdb.dbo.Layers' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="Layers">
+          <Key>
+            <PropertyRef Name="LayerID" />
+            <PropertyRef Name="LayerName" />
+            <PropertyRef Name="LayerProjection" />
+            <PropertyRef Name="LayerBounds" />
+            <PropertyRef Name="Layer_site" />
+          </Key>
+          <Property Name="LayerID" Type="int" Nullable="false" />
+          <Property Name="LayerName" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="LayerProjection" Type="varchar" MaxLength="500" Nullable="false" />
+          <Property Name="LayerBounds" Type="varchar" MaxLength="500" Nullable="false" />
+          <Property Name="Layer_site" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityContainer Name="mytestdbModel1StoreContainer">
+          <EntitySet Name="Layers" EntityType="Self.Layers" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Layers].[LayerID] AS [LayerID], 
+    [Layers].[LayerName] AS [LayerName], 
+    [Layers].[LayerProjection] AS [LayerProjection], 
+    [Layers].[LayerBounds] AS [LayerBounds], 
+    [Layers].[Layer_site] AS [Layer_site]
+    FROM [dbo].[Layers] AS [Layers]</DefiningQuery>
+          </EntitySet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="mytestdbModel1" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Layer">
+          <Key>
+            <PropertyRef Name="LayerID" />
+            <PropertyRef Name="LayerName" />
+            <PropertyRef Name="LayerProjection" />
+            <PropertyRef Name="LayerBounds" />
+            <PropertyRef Name="Layer_site" />
+          </Key>
+          <Property Name="LayerID" Type="Int32" Nullable="false" />
+          <Property Name="LayerName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="LayerProjection" Type="String" MaxLength="500" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="LayerBounds" Type="String" MaxLength="500" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Layer_site" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityContainer Name="mytestdbEntities1" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Layers" EntityType="Self.Layer" />
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="mytestdbModel1StoreContainer" CdmEntityContainer="mytestdbEntities1">
+          <EntitySetMapping Name="Layers">
+            <EntityTypeMapping TypeName="mytestdbModel1.Layer">
+              <MappingFragment StoreEntitySet="Layers">
+                <ScalarProperty Name="LayerID" ColumnName="LayerID" />
+                <ScalarProperty Name="LayerName" ColumnName="LayerName" />
+                <ScalarProperty Name="LayerProjection" ColumnName="LayerProjection" />
+                <ScalarProperty Name="LayerBounds" ColumnName="LayerBounds" />
+                <ScalarProperty Name="Layer_site" ColumnName="Layer_site" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

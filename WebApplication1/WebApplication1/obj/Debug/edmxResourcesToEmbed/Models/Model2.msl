@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="mytestdbModel1StoreContainer" CdmEntityContainer="mytestdbEntities1">
+    <EntitySetMapping Name="Layers">
+      <EntityTypeMapping TypeName="mytestdbModel1.Layer">
+        <MappingFragment StoreEntitySet="Layers">
+          <ScalarProperty Name="LayerID" ColumnName="LayerID" />
+          <ScalarProperty Name="LayerName" ColumnName="LayerName" />
+          <ScalarProperty Name="LayerProjection" ColumnName="LayerProjection" />
+          <ScalarProperty Name="LayerBounds" ColumnName="LayerBounds" />
+          <ScalarProperty Name="Layer_site" ColumnName="Layer_site" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping>
